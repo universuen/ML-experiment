@@ -1,6 +1,7 @@
 from Perceptron import Perceptron
 from sklearn.datasets import fetch_20newsgroups_vectorized
 import numpy as np
+from KNN import KNN
 
 
 # 数据获取和处理
@@ -14,7 +15,6 @@ test_x = test_set
 test_y = np.array(test_set.target)
 
 accuracy = np.zeros(20)
-
 
 def Perceptron_test():
     # 实例化感知机
@@ -35,7 +35,7 @@ def Perceptron_test():
             else:
                 temp_test_y[j] = -1
         # 开始训练
-        print('开始训练')
+        # print('开始训练')
         perceptron.train(train_x, temp_train_y)
         result = perceptron.predict(test_x)
         correct = 0
@@ -43,8 +43,23 @@ def Perceptron_test():
             correct += (j == k)
         print(correct/len(result))
         accuracy[i] = correct/len(result)
-        np.save('accuracy.npy', accuracy)
+        # 因为训练时间较长，每训练一个模型便将其准确率存入Perceptron_accuracy.npy中
+        np.save('Perceptron_accuracy.npy', accuracy)
 
 
+def KNN_test():
+    # 实例化KNN类, 设置K值为5
+    knn = KNN.KNN(5)
+    prediction = knn.predict(test_x, train_x, train_y, 20)
+    # 计算前20个向量的准确率
+    correct = 0
+    for j, k in zip(prediction, test_y[:20]):
+        correct += (j == k)
+    print(correct / 20)
 
-Perceptron_test()
+
+# Perceptron_test()
+# print(np.load('Perceptron_accuracy.npy'))
+KNN_test()
+
+

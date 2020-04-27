@@ -11,8 +11,8 @@ class Perceptron:
     def train(self, x, y):
         self.len = x.data.shape[1]  # 总词数
         self.w = np.zeros(self.len)
-        print('进入while循环')
-        print(self.len)
+        # print('进入while循环')
+        # print(self.len)
         data = x.data.data
         indptr = x.data.indptr
         indices = x.data.indices

@@ -24,11 +24,26 @@ class KNN:
             distances[i] = distance
 
         # 排序后取前k项确定类别
-        sorted_indicies = distances.argsort()
+        sorted_indices = distances.argsort()
         class_count = {}
         for i in range(self.k):
-            vote = label_set[sorted_indicies[i]]
+            vote = label_set[sorted_indices[i]]
             class_count[vote] = class_count.get(vote, 0) + 1  # default 0
 
         sorted_class_count = sorted(class_count.items(), key=lambda d: d[1], reverse=True)
         return sorted_class_count[0][0]
+
+    def predict(self, test_set, data_set, label_set, cut):
+        result = np.zeros(test_set.data.shape[0])
+        data = test_set.data.data
+        indptr = test_set.data.indptr
+        indices = test_set.data.indices
+        # 分别解析出稀疏矩阵的每个行向量并预测其label, 解析数的最大值为cut
+        for i in range(cut):
+            # 从稀疏矩阵中提取一个行向量
+            temp = np.zeros(data_set.data.shape[1])
+            for j in range(indptr[i + 1]):
+                # print(j)
+                temp[indices[j]] = data[j]
+            result[i] = self.classify(temp, data_set, label_set)
+        return result
