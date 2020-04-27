@@ -2,6 +2,8 @@ from Perceptron import Perceptron
 from sklearn.datasets import fetch_20newsgroups_vectorized
 import numpy as np
 from KNN import KNN
+from Naive_Bayes import NB
+import pickle
 
 
 # 数据获取和处理
@@ -19,6 +21,7 @@ accuracy = np.zeros(20)
 def Perceptron_test():
     # 实例化感知机
     perceptron = Perceptron.Perceptron()
+    result = []  # 用于存放各个类别对应的感知机
     # 针对每一个类别进行二元分类并计算准确率
     for i in range(20):
         temp_train_y = train_y
@@ -43,8 +46,9 @@ def Perceptron_test():
             correct += (j == k)
         print(correct/len(result))
         accuracy[i] = correct/len(result)
-        # 因为训练时间较长，每训练一个模型便将其准确率存入Perceptron_accuracy.npy中
-        np.save('Perceptron_accuracy.npy', accuracy)
+        result.append(perceptron)
+    # 存储模型
+    pickle.dump(result, open('Perceptron\\models.pkl', 'wb'))
 
 
 def KNN_test():
@@ -58,8 +62,23 @@ def KNN_test():
     print(correct / 20)
 
 
+def NB_test():
+    # 实例化模型
+    nb = NB.NB(train_x.data.shape[1], 20)
+    # 训练模型
+    nb.train(train_x, train_y)
+    # 存储模型
+    pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
+    # 计算准确率
+    correct = 0
+    prediction = nb.predict(test_x)
+    for j, k in zip(prediction, test_y):
+        correct += (j == k)
+    print(correct / test_y.shape[0])
+
 # Perceptron_test()
 # print(np.load('Perceptron_accuracy.npy'))
-KNN_test()
+# KNN_test()
+NB_test()
 
 
