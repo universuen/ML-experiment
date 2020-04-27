@@ -49,7 +49,7 @@ class NB:
                 # 计算标准差
                 sum = 0
                 for k in container:
-                    sum += (k - avg)**2
+                    sum += (k[j] - avg)**2
                 self.Pxy[i][j][1] = math.sqrt(sum/len(container))
             print('TRAIN\t', i)
 
