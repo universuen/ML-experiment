@@ -13,11 +13,14 @@ train_y = np.array(train_set.target)
 test_x = test_set
 test_y = np.array(test_set.target)
 
+accuracy = np.zeros(20)
+
+
 def Perceptron_test():
     # 实例化感知机
     perceptron = Perceptron.Perceptron()
     # 针对每一个类别进行二元分类并计算准确率
-    for i in range(1, 21):
+    for i in range(20):
         temp_train_y = train_y
         temp_test_y = test_y
         # 规格化Target
@@ -36,9 +39,11 @@ def Perceptron_test():
         perceptron.train(train_x, temp_train_y)
         result = perceptron.predict(test_x)
         correct = 0
-        for j, k in result, temp_test_y:
+        for j, k in zip(result, temp_test_y):
             correct += (j == k)
         print(correct/len(result))
+        accuracy[i] = correct/len(result)
+        np.save('accuracy.npy', accuracy)
 
 
 
