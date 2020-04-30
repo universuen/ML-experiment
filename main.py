@@ -16,9 +16,9 @@ train_y = np.array(train_set.target)
 test_x = test_set
 test_y = np.array(test_set.target)
 
-accuracy = np.zeros(20)
 
 def Perceptron_test():
+    accuracy = np.zeros(20)
     # 实例化感知机
     perceptron = Perceptron.Perceptron()
     result = []  # 用于存放各个类别对应的感知机
@@ -63,12 +63,14 @@ def KNN_test():
 
 
 def NB_test():
-    # 实例化模型
-    nb = NB.NB(train_x.data.shape[1], 20)
-    # 训练模型
-    nb.train(train_x, train_y)
-    # 存储模型
-    pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
+    # # 实例化模型
+    # nb = NB.NB(train_x.data.shape[1], 20)
+    # # 训练模型
+    # nb.train(train_x, train_y)
+    # # 存储模型
+    # pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
+    with open('Naive_Bayes\\model.pkl', 'rb') as f:
+        nb = pickle.load(f)
     # 计算准确率
     correct = 0
     prediction = nb.predict(test_x)

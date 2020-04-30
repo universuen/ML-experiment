@@ -4,10 +4,14 @@ import math
 
 
 def PDF(x, loc, scale):  # 概率密度函数, 这里使用高斯分布
+    # 引入esp防止结果为0
+    esp = 1e-6
     # 分子
-    numerator = math.exp(-((x-loc)**2)/(2*(scale**2)))
-    denominator = math.sqrt(2*math.pi)*scale
-    return numerator/denominator
+    numerator = math.exp(-((x-loc)**2)/(2*(scale**2)+esp))
+    # 分母
+    denominator = math.sqrt(2*math.pi)*scale+esp
+    return math.log2(numerator/denominator + esp)
+
 
 class NB:
     def __init__(self, n_attribute: int = 10000, n_class: int = 20):
@@ -59,18 +63,18 @@ class NB:
         indptr = x.data.indptr
         indices = x.data.indices
         for i in range(x.data.shape[0]):
-            if i % 100 == 99:
-                print('TEST\t', i + 1)
             # 从稀疏矩阵中提取一个行向量
             temp = np.zeros(x.data.shape[1])
             for j in range(indptr[i + 1]):
                 temp[indices[j]] = data[j]
             Pyx = np.zeros(self.Py.shape[0])  # 用于记录所有P(Y|X)
             for j in range(self.Py.shape[0]):
-                temp_result = self.Py[j]
+                temp_result = 0.0
+                # 大量的乘积有可能造成浮点数下溢出，所以这里对结果取对数，变为求和形式
                 for k in range(self.Pxy.shape[1]):
-                    temp_result *= PDF(temp[k], self.Pxy[j][k][0], self.Pxy[j][k][1])
-                Pyx[j] = temp_result
+                    temp_result += PDF(temp[k], self.Pxy[j][k][0], self.Pxy[j][k][1])
+                Pyx[j] = temp_result + math.log2(self.Py[j])
+            print(i)
             # 取概率最大的类
             result.append(np.argsort(Pyx)[0])
         return result
