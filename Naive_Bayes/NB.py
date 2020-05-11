@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import threading
 # T->类别, X->属性
 
 
@@ -31,50 +32,76 @@ class NB:
                     match += 1
             self.Py[i] = match/y.shape[0]
         print(self.Py)
-
+        threads = []
         # 然后计算在每一个类别Y下每一个属性X的均值和标准差
         for i in range(self.Py.shape[0]):
-            container = []  # 暂时存放属于当前类别Y的所有样本
-            for j in range(y.shape[0]):
-                if y[j] == i:
-                    # 从稀疏矩阵中提取与之匹配的行向量
-                    temp = np.zeros(x.shape[1])
-                    for k in range(indptr[j + 1]):
-                        temp[indices[k]] = data[k]
-                    container.append(temp)
-            # 遍历所有属性
-            for j in range(x.shape[1]):
-                # 计算均值
-                sum = 0
-                for k in container:
-                    sum += k[j]
-                avg = sum/len(container)
-                self.Pxy[i][j][0] = avg
-                # 计算标准差
-                sum = 0
-                for k in container:
-                    sum += (k[j] - avg)**2
-                self.Pxy[i][j][1] = math.sqrt(sum/len(container))
-            print('TRAIN\t', i)
+            t = threading.Thread(target=self.sub_train, args=(y, i, x, indptr, indices, data), name=str(i))
+            threads.append(t)
+        for t in threads:
+            t.start()
+            print('NB train: 线程'+ t.name + '开始运行')
+        for t in threads:
+            t.join()
+
+
+    def sub_train(self, y, i, x, indptr, indices, data):
+        container = []  # 暂时存放属于当前类别Y的所有样本
+        for j in range(y.shape[0]):
+            if y[j] == i:
+                # 从稀疏矩阵中提取与之匹配的行向量
+                temp = np.zeros(x.shape[1])
+                for k in range(indptr[j + 1]):
+                    temp[indices[k]] = data[k]
+                container.append(temp)
+        # 遍历所有属性
+        for j in range(x.shape[1]):
+            # 计算均值
+            sum = 0
+            for k in container:
+                sum += k[j]
+            avg = sum / len(container)
+            self.Pxy[i][j][0] = avg
+            # 计算标准差
+            sum = 0
+            for k in container:
+                sum += (k[j] - avg) ** 2
+            self.Pxy[i][j][1] = math.sqrt(sum / len(container))
+        print('NB train: 线程' + i + '运行结束')
+
+
+
+
 
     def predict(self, x):
         result = []
         data = x.data
         indptr = x.indptr
         indices = x.indices
+        threads = []
         for i in range(x.shape[0]):
-            # 从稀疏矩阵中提取一个行向量
-            temp = np.zeros(x.shape[1])
-            for j in range(indptr[i + 1]):
-                temp[indices[j]] = data[j]
-            Pyx = np.zeros(self.Py.shape[0])  # 用于记录所有P(Y|X)
-            for j in range(self.Py.shape[0]):
-                temp_result = 0.0
-                # 大量的乘积有可能造成浮点数下溢出，所以这里对结果取对数，变为求和形式
-                for k in range(self.Pxy.shape[1]):
-                    temp_result += PDF(temp[k], self.Pxy[j][k][0], self.Pxy[j][k][1])
-                Pyx[j] = temp_result + math.log2(self.Py[j])
-            print(i)
-            # 取概率最大的类
-            result.append(np.argsort(Pyx)[0])
+            t = threading.Thread(target=self.sub_predict, args=(x, i, result, data, indptr, indices), name=str(i))
+            threads.append(t)
+        for t in threads:
+            t.start()
+            print('NB predict: 线程'+ t.name + '开始运行')
+        for t in threads:
+            t.join()
         return result
+
+    def sub_predict(self, x, i, result, data, indptr, indices):
+        # 从稀疏矩阵中提取一个行向量
+        temp = np.zeros(x.shape[1])
+        for j in range(indptr[i + 1]):
+            temp[indices[j]] = data[j]
+        Pyx = np.zeros(self.Py.shape[0])  # 用于记录所有P(Y|X)
+        for j in range(self.Py.shape[0]):
+            temp_result = 0.0
+            # 大量的乘积有可能造成浮点数下溢出，所以这里对结果取对数，变为求和形式
+            for k in range(self.Pxy.shape[1]):
+                temp_result += PDF(temp[k], self.Pxy[j][k][0], self.Pxy[j][k][1])
+            Pyx[j] = temp_result + math.log2(self.Py[j])
+        print(i)
+        # 取概率最大的类
+        result.append(np.argsort(Pyx)[0])
+        print('NB predict: 线程' + i + '运行结束')
+

@@ -37,8 +37,8 @@ def Perceptron_test():
 
     # 针对每一个类别进行二元分类并计算准确率
     for i in range(20):
-        temp_train_y = train_set.target
-        temp_test_y = test_set.target
+        temp_train_y = train_y.copy()
+        temp_test_y = test_y.copy()
         # 规格化Target
         for j in range(temp_train_y.shape[0]):
             if temp_train_y[j] == i:
@@ -56,7 +56,7 @@ def Perceptron_test():
         threads.append(thread)
     for t in threads:
         t.start()
-        print('线程'+ t.name + '开始运行')
+        print('Perceptron: 线程'+ t.name + '开始运行')
 
     # 所有线程完成后存储模型
     for t in threads:
@@ -73,7 +73,7 @@ def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_te
     print(correct / len(result))
     accuracy[i] = correct / len(result)
     model[i] = perceptron
-    print('线程' + str(i) + '运行结束!')
+    print('Perceptron: 线程' + str(i) + '运行结束!')
 
 
 def KNN_test():
@@ -102,10 +102,13 @@ def NB_test():
     for j, k in zip(prediction, test_y):
         correct += (j == k)
     print(correct / test_y.shape[0])
-
-Perceptron_test()
+if __name__ == '__main__':
+    t1 = threading.Thread(target=Perceptron_test)
+    t1.start()
+    t2 = threading.Thread(target=NB_test)
+    t2.start()
 # print(np.load('Perceptron_accuracy.npy'))
 # KNN_test()
-# NB_test()
+
 
 
