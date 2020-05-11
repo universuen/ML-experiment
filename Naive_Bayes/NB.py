@@ -19,9 +19,9 @@ class NB:
         self.Pxy = np.zeros((n_class, n_attribute, 2))  # 存储P(X|Y)的参数值(均值和标准差)
 
     def train(self, x, y):
-        data = x.data.data
-        indptr = x.data.indptr
-        indices = x.data.indices
+        data = x.data
+        indptr = x.indptr
+        indices = x.indices
 
         # 首先根据训练集估计P(Y)
         for i in range(self.Py.shape[0]):
@@ -38,12 +38,12 @@ class NB:
             for j in range(y.shape[0]):
                 if y[j] == i:
                     # 从稀疏矩阵中提取与之匹配的行向量
-                    temp = np.zeros(x.data.shape[1])
+                    temp = np.zeros(x.shape[1])
                     for k in range(indptr[j + 1]):
                         temp[indices[k]] = data[k]
                     container.append(temp)
             # 遍历所有属性
-            for j in range(x.data.shape[1]):
+            for j in range(x.shape[1]):
                 # 计算均值
                 sum = 0
                 for k in container:
@@ -59,12 +59,12 @@ class NB:
 
     def predict(self, x):
         result = []
-        data = x.data.data
-        indptr = x.data.indptr
-        indices = x.data.indices
-        for i in range(x.data.shape[0]):
+        data = x.data
+        indptr = x.indptr
+        indices = x.indices
+        for i in range(x.shape[0]):
             # 从稀疏矩阵中提取一个行向量
-            temp = np.zeros(x.data.shape[1])
+            temp = np.zeros(x.shape[1])
             for j in range(indptr[i + 1]):
                 temp[indices[j]] = data[j]
             Pyx = np.zeros(self.Py.shape[0])  # 用于记录所有P(Y|X)
