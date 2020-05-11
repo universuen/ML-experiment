@@ -2,7 +2,6 @@ from Perceptron import Perceptron
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
-from KNN import KNN
 from Naive_Bayes import NB
 import pickle
 import threading
@@ -31,7 +30,7 @@ def Perceptron_test():
     # 实例化感知机
     perceptron = Perceptron.Perceptron()
     # 模型队列
-    model = range(20)
+    model = [None for _ in range(20)]
     # 线程队列
     threads = []
 
@@ -76,32 +75,25 @@ def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_te
     print('Perceptron: 线程' + str(i) + '运行结束!')
 
 
-def KNN_test():
-    # 实例化KNN类, 设置K值为5
-    knn = KNN.KNN(5)
-    prediction = knn.predict(test_x, train_x, train_y, 20)
-    # 计算前20个向量的准确率
-    correct = 0
-    for j, k in zip(prediction, test_y[:20]):
-        correct += (j == k)
-    print(correct / 20)
 
 
 def NB_test():
     # 实例化模型
-    nb = NB.NB(train_x.shape[1], 20)
-    # 训练模型
-    nb.train(train_x, train_y)
-    # 存储模型
-    pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
-    # with open('Naive_Bayes\\model.pkl', 'rb') as f:
-    #     nb = pickle.load(f)
+    # nb = NB.NB(train_x.shape[1], 20)
+    # # 训练模型
+    # nb.train(train_x, train_y)
+    # # 存储模型
+    # pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
+    with open('Naive_Bayes\\model.pkl', 'rb') as f:
+        nb = pickle.load(f)
     # 计算准确率
     correct = 0
     prediction = nb.predict(test_x)
     for j, k in zip(prediction, test_y):
         correct += (j == k)
     print(correct / test_y.shape[0])
+
+
 if __name__ == '__main__':
     t1 = threading.Thread(target=Perceptron_test)
     t1.start()

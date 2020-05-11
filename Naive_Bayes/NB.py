@@ -66,14 +66,14 @@ class NB:
             for k in container:
                 sum += (k[j] - avg) ** 2
             self.Pxy[i][j][1] = math.sqrt(sum / len(container))
-        print('NB train: 线程' + i + '运行结束')
+        print('NB train: 线程' + str(i) + '运行结束')
 
 
 
 
 
     def predict(self, x):
-        result = []
+        result = [None for _ in range(x.shape[0])]
         data = x.data
         indptr = x.indptr
         indices = x.indices
@@ -102,6 +102,6 @@ class NB:
             Pyx[j] = temp_result + math.log2(self.Py[j])
         print(i)
         # 取概率最大的类
-        result.append(np.argsort(Pyx)[0])
-        print('NB predict: 线程' + i + '运行结束')
+        result[i] = np.argsort((Pyx)[0])
+        print('NB predict: 线程' + str(i) + '运行结束')
 
