@@ -102,6 +102,6 @@ class NB:
             Pyx[j] = temp_result + math.log2(self.Py[j])
         print(i)
         # 取概率最大的类
-        result[i] = np.argsort((Pyx)[0])
+        result[i] = np.argsort(Pyx)[0]
         print('NB predict: 线程' + str(i) + '运行结束')
 
