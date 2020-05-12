@@ -35,7 +35,7 @@ def Perceptron_test():
     threads = []
 
     # 针对每一个类别进行二元分类并计算准确率
-    for i in range(1):
+    for i in range(20):
         temp_train_y = train_y.copy()
         temp_test_y = test_y.copy()
         # 规格化Target
