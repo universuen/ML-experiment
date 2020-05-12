@@ -16,7 +16,7 @@ class Perceptron:
         data = x.data
         indptr = x.indptr
         indices = x.indices
-        for i in range(x.data.shape[0]):
+        for i in range(x.shape[0]):
             if i % 1000 == 999:
                 print('TRAIN\t', i + 1)
             # 从稀疏矩阵中提取一个行向量
@@ -37,7 +37,7 @@ class Perceptron:
         data = x.data
         indptr = x.indptr
         indices = x.indices
-        for i in range(x.data.shape[0]):
+        for i in range(x.shape[0]):
             if i % 1000 == 999:
                 print('TEST\t', i + 1)
             # 从稀疏矩阵中提取一个行向量

@@ -35,7 +35,7 @@ def Perceptron_test():
     threads = []
 
     # 针对每一个类别进行二元分类并计算准确率
-    for i in range(20):
+    for i in range(1):
         temp_train_y = train_y.copy()
         temp_test_y = test_y.copy()
         # 规格化Target
@@ -57,11 +57,12 @@ def Perceptron_test():
         t.start()
         print('Perceptron: 线程'+ t.name + '开始运行')
 
-    # 所有线程完成后存储模型
+    # 所有线程完成后存储模型和准确率
     for t in threads:
         t.join()
     pickle.dump(model, open('Perceptron\\models.pkl', 'wb'))
     print(accuracy)
+    pickle.dump(accuracy, open('Perceptron\\accuracy.pkl', 'wb'))
 
 def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_test_y):
     perceptron.train(x, temp_train_y)
@@ -79,13 +80,13 @@ def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_te
 
 def NB_test():
     # 实例化模型
-    # nb = NB.NB(train_x.shape[1], 20)
-    # # 训练模型
-    # nb.train(train_x, train_y)
-    # # 存储模型
-    # pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
-    with open('Naive_Bayes\\model.pkl', 'rb') as f:
-        nb = pickle.load(f)
+    nb = NB.NB(train_x.shape[1], 20)
+    # 训练模型
+    nb.train(train_x, train_y)
+    # 存储模型
+    pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
+    # with open('Naive_Bayes\\model.pkl', 'rb') as f:
+    #     nb = pickle.load(f)
     # 计算准确率
     correct = 0
     prediction = nb.predict(test_x)
