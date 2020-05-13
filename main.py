@@ -80,13 +80,13 @@ def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_te
 
 def NB_test():
     # 实例化模型
-    nb = NB.NB(train_x.shape[1], 20)
-    # 训练模型
-    nb.train(train_x, train_y)
-    # 存储模型
-    pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
-    # with open('Naive_Bayes\\model.pkl', 'rb') as f:
-    #     nb = pickle.load(f)
+    # nb = NB.NB(train_x.shape[1], 20)
+    # # 训练模型
+    # nb.train(train_x, train_y)
+    # # 存储模型
+    # pickle.dump(nb, open('Naive_Bayes\\model.pkl', 'wb'))
+    with open('Naive_Bayes\\model.pkl', 'rb') as f:
+        nb = pickle.load(f)
     # 计算准确率
     correct = 0
     prediction = nb.predict(test_x)
@@ -97,7 +97,7 @@ def NB_test():
 
 if __name__ == '__main__':
     t1 = threading.Thread(target=Perceptron_test)
-    t1.start()
+    #t1.start()
     t2 = threading.Thread(target=NB_test)
     t2.start()
 # print(np.load('Perceptron_accuracy.npy'))
