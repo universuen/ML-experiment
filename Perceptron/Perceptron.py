@@ -11,21 +11,16 @@ class Perceptron:
     def train(self, x, y):
         self.len = x.shape[1]  # 总词数
         self.w = np.zeros(self.len)
-        # print('进入while循环')
-        # print(self.len)
         data = x.data
         indptr = x.indptr
         indices = x.indices
         for i in range(x.shape[0]):
-            if i % 1000 == 999:
-                print('TRAIN\t', i + 1)
+            # if i % 1000 == 999:
+            #     print('TRAIN\t', i + 1)
             # 从稀疏矩阵中提取一个行向量
             temp = np.zeros(x.shape[1])
             for j in range(indptr[i+1]):
-                # print(j)
                 temp[indices[j]] = data[j]
-            # print('向量取出完毕')
-            # 权重优化
             if y[i] * (np.dot(self.w, temp)+self.b) <= 0:
                 self.w += self.lr * y[i] * temp
                 self.b += self.lr * y[i]
