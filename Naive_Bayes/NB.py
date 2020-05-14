@@ -18,7 +18,7 @@ def PDF(x, loc, scale):  # 概率密度函数, 这里使用高斯分布
 class NB:
     def __init__(self, n_attribute: int = 10000, n_class: int = 20):
         self.Py = np.zeros(n_class)  # 存储P(Y)
-        self.Pxy = np.zeros((n_class, n_attribute))  # 存储后验概率P(X|Y)
+        self.Pxy = np.zeros((n_class, n_attribute, 2))  # 存储后验概率P(X|Y)的均值和方差
 
     def train(self, x, y):
         data = x.data
@@ -79,7 +79,7 @@ class NB:
         indptr = x.indptr
         indices = x.indices
         threads = []
-        for i in range(20):
+        for i in range(x.shape[0]):
             t = threading.Thread(target=self.sub_predict, args=(x, i, result, data, indptr, indices), name=str(i))
             threads.append(t)
         for t in threads:
