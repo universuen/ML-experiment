@@ -2,11 +2,12 @@ import numpy as np
 
 
 class Perceptron:
-    def __init__(self, learning_rate = 1):
+    def __init__(self, learning_rate = 1, epochs = 1):
         self.w = 0
         self.b = 0
         self.lr = learning_rate
         self.len = 0
+        self.epochs = epochs
 
     def train(self, x, y):
         self.len = x.shape[1]  # 总词数
@@ -14,18 +15,18 @@ class Perceptron:
         data = x.data
         indptr = x.indptr
         indices = x.indices
-        for i in range(x.shape[0]):
-            # if i % 1000 == 999:
-            #     print('TRAIN\t', i + 1)
-            # 从稀疏矩阵中提取一个行向量
-            temp = np.zeros(x.shape[1])
-            for j in range(indptr[i+1]):
-                temp[indices[j]] = data[j]
-            if y[i] * (np.dot(self.w, temp)+self.b) <= 0:
-                self.w += self.lr * y[i] * temp
-                self.b += self.lr * y[i]
-                # totally_correct = FalseSQL I
-            # print(self.w)
+        for _ in range(self.epochs):
+            for i in range(x.shape[0]):
+                # if i % 1000 == 999:
+                #     print('TRAIN\t', i + 1)
+                # 从稀疏矩阵中提取一个行向量
+                temp = np.zeros(x.shape[1])
+                for j in range(indptr[i], indptr[i+1]):
+                    temp[indices[j]] = data[j]
+                if y[i] * (np.dot(self.w, temp)+self.b) <= 0:
+                    self.w += self.lr * y[i] * temp
+                    self.b += self.lr * y[i]
+
 
     def predict(self, x):
         result = []
@@ -33,11 +34,11 @@ class Perceptron:
         indptr = x.indptr
         indices = x.indices
         for i in range(x.shape[0]):
-            if i % 1000 == 999:
-                print('TEST\t', i + 1)
+            # if i % 1000 == 999:
+            #     print('TEST\t', i + 1)
             # 从稀疏矩阵中提取一个行向量
             temp = np.zeros(x.shape[1])
-            for j in range(indptr[i + 1]):
+            for j in range(indptr[i], indptr[i+1]):
                 temp[indices[j]] = data[j]
             # 求解结果
             if np.dot(self.w, temp)+self.b <= 0:

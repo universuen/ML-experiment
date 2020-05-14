@@ -1,18 +1,6 @@
 import numpy as np
-import math
 import threading
-from sklearn.naive_bayes import MultinomialNB
-# T->类别, X->属性
-
-
-def PDF(x, loc, scale):  # 概率密度函数, 这里使用高斯分布
-    # 引入esp防止分母为0
-    esp = 1e-6
-    # 分子
-    numerator = math.exp(-((x-loc)**2)/(2*(scale**2) + esp))
-    # 分母
-    denominator = math.sqrt(2*math.pi)*scale + esp
-    return numerator/denominator
+# Y->类别, X->属性
 
 
 class NB:
@@ -34,7 +22,7 @@ class NB:
             self.Py[i] = match/y.shape[0]
         print(self.Py)
         threads = []
-        # 然后计算在每一个类别Y下每一个属性X的后验概率
+        # 然后计算在每一个类别Y下每一个属性X的均值和标准差
         for i in range(self.Py.shape[0]):
             t = threading.Thread(target=self.sub_train, args=(y, i, x, indptr, indices, data), name=str(i))
             threads.append(t)
@@ -47,26 +35,21 @@ class NB:
 
     def sub_train(self, y, i, x, indptr, indices, data):
         container = []  # 暂时存放属于当前类别Y的所有样本
-        for j in range(y.shape[0]):
+        for j in range(x.shape[0]):
             if y[j] == i:
                 # 从稀疏矩阵中提取属于当前类的行向量
                 temp = np.zeros(x.shape[1])
-                for k in range(indptr[j + 1]):
+                for k in range(indptr[j], indptr[j+1]):
                     temp[indices[k]] = data[k]
                 container.append(temp)
+        # 将container转置，方便接下来的运算
+        container = np.array(container).T
         # 遍历所有属性
         for j in range(x.shape[1]):
             # 计算均值
-            sum = 0
-            for k in container:
-                sum += k[j]
-            avg = sum / len(container)
-            self.Pxy[i][j][0] = avg
+            self.Pxy[i][j][0] = np.mean(container[j])
             # 计算标准差
-            sum = 0
-            for k in container:
-                sum += (k[j] - avg) ** 2
-            self.Pxy[i][j][1] = math.sqrt(sum / len(container))
+            self.Pxy[i][j][1] = np.std(container[j])
         print('NB train: 线程' + str(i) + '运行结束')
 
 
@@ -92,16 +75,21 @@ class NB:
     def sub_predict(self, x, i, result, data, indptr, indices):
         # 从稀疏矩阵中提取一个行向量
         temp = np.zeros(x.shape[1])
-        for j in range(indptr[i + 1]):
+        for j in range(indptr[i], indptr[i+1]):
             temp[indices[j]] = data[j]
-        Pyx = np.zeros(self.Py.shape[0])  # 用于记录所有P(Y|X)
+        Pyx = np.zeros((self.Py.shape[0]))  # 用于记录所有P(Y|X)
         for j in range(self.Py.shape[0]):
-            Pyx[j] = math.log2(self.Py[j] + 1)
+            Pyx[j] = np.log(self.Py[j])
             # 大量的乘积有可能造成浮点数下溢出，所以这里对结果取对数，变为求和形式
             for k in range(self.Pxy.shape[1]):
-                Pyx[j] += math.log2(PDF(temp[k], self.Pxy[j][k][0], self.Pxy[j][k][1]) + 1)
+                miu = self.Pxy[j][k][0]
+                sigma = self.Pxy[j][k][1]
+                if miu*sigma == 0:
+                    continue
+                Pyx[j] += (-((temp[k] - miu)**2)/(2*(sigma**2)) - np.log(sigma)) # 常数已省略
+                #print(Pyx[j])
         # 取概率最大的类
-        print(np.argsort(Pyx))
+        # print(np.argsort(Pyx))
         result[i] = np.argsort(Pyx)[len(Pyx) - 1]
         print('NB predict: 线程' + str(i) + '运行结束')
 

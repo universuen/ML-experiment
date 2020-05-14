@@ -16,13 +16,14 @@ with open('stopwords.txt') as f:
     stop_list = f.read().split()
 
 # 实例化转换器
-vectorizer = TfidfVectorizer(stop_words=stop_list, lowercase=True, max_features=10000)
+vectorizer = TfidfVectorizer(stop_words=stop_list, max_features=15000)
 
 # 将文本规格化并转换为tf-idf向量
 train_x = vectorizer.fit_transform(train_set.data)
 train_y = train_set.target
-test_x = vectorizer.fit_transform(test_set.data)
+test_x = vectorizer.transform(test_set.data)
 test_y = test_set.target
+
 
 
 def Perceptron_test():
@@ -92,14 +93,15 @@ def NB_test():
     prediction = nb.predict(test_x)
     for j, k in zip(prediction, test_y):
         correct += (j == k)
-    print(correct / test_y.shape[0])
+    print(correct / 10)
 
 
 if __name__ == '__main__':
-    # t1 = threading.Thread(target=Perceptron_test)
-    # t1.start()
+    t1 = threading.Thread(target=Perceptron_test)
+    t1.start()
     t2 = threading.Thread(target=NB_test)
     t2.start()
+
 
 
 
