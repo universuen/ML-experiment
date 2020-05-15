@@ -93,12 +93,12 @@ def NB_test():
     prediction = nb.predict(test_x)
     for j, k in zip(prediction, test_y):
         correct += (j == k)
-    print(correct / 10)
+    print(correct / test_y.shape[0])
 
 
 if __name__ == '__main__':
     t1 = threading.Thread(target=Perceptron_test)
-    t1.start()
+    # t1.start()
     t2 = threading.Thread(target=NB_test)
     t2.start()
 

@@ -87,9 +87,7 @@ class NB:
                 if miu*sigma == 0:
                     continue
                 Pyx[j] += (-((temp[k] - miu)**2)/(2*(sigma**2)) - np.log(sigma)) # 常数已省略
-                #print(Pyx[j])
         # 取概率最大的类
-        # print(np.argsort(Pyx))
-        result[i] = np.argsort(Pyx)[len(Pyx) - 1]
-        print('NB predict: 线程' + str(i) + '运行结束')
+        result[i] = np.argmax(Pyx)
+        print('NB predict: 线程' + str(i) + '运行结束', np.argmax(Pyx))
 
