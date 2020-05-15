@@ -80,14 +80,14 @@ def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_te
 
 
 def NB_test():
-    # # 实例化模型
-    # nb = NB.NB(train_x.shape[1], 20)
-    # # 训练模型
-    # nb.train(train_x, train_y)
-    # # 存储模型
-    # pickle.dump(nb, open('Naive_Bayes\\model_Gaussian.pkl', 'wb'))
-    with open('Naive_Bayes\\model_Gaussian.pkl', 'rb') as f:
-        nb = pickle.load(f)
+    # 实例化模型
+    nb = NB.NB(train_x.shape[1], 20)
+    # 训练模型
+    nb.train(train_x, train_y)
+    # 存储模型
+    pickle.dump(nb, open('Naive_Bayes\\model_multimodial.pkl', 'wb'))
+    # with open('Naive_Bayes\\model_Gaussian.pkl', 'rb') as f:
+    #     nb = pickle.load(f)
     # 计算准确率
     correct = 0
     prediction = nb.predict(test_x)
