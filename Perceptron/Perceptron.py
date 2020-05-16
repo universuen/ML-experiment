@@ -23,6 +23,7 @@ class Perceptron:
                 temp = np.zeros(x.shape[1])
                 for j in range(indptr[i], indptr[i+1]):
                     temp[indices[j]] = data[j]
+                # 如果是误分类点则梯度下降
                 if y[i] * (np.dot(self.w, temp)+self.b) <= 0:
                     self.w += self.lr * y[i] * temp
                     self.b += self.lr * y[i]

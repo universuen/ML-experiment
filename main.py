@@ -5,6 +5,7 @@ import numpy as np
 from Naive_Bayes import NB
 import pickle
 import threading
+from sklearn.metrics import f1_score, accuracy_score
 
 
 # 数据获取
@@ -25,56 +26,55 @@ test_x = vectorizer.transform(test_set.data)
 test_y = test_set.target
 
 
+P_lr_dic = []
+P_ep_dic = []
 
-def Perceptron_test():
+def Perceptron_test(lr, epochs):
     accuracy = np.zeros(20)
-    # 实例化感知机
-    perceptron = Perceptron.Perceptron()
+    f1 = np.zeros(20)
     # 模型队列
-    model = [None for _ in range(20)]
+    perceptrons = [None for _ in range(20)]
     # 线程队列
     threads = []
-
+    temp_train_y = [None for _ in range(20)]
+    temp_test_y = [None for _ in range(20)]
     # 针对每一个类别进行二元分类并计算准确率
     for i in range(20):
-        temp_train_y = train_y.copy()
-        temp_test_y = test_y.copy()
+        perceptrons[i] = Perceptron.Perceptron(learning_rate=lr, epochs=epochs)
+        temp_train_y[i] = train_y.copy()
+        temp_test_y[i] = test_y.copy()
         # 规格化Target
-        for j in range(temp_train_y.shape[0]):
-            if temp_train_y[j] == i:
-                temp_train_y[j] = 1
+        for j in range(temp_train_y[i].shape[0]):
+            if temp_train_y[i][j] == i:
+                temp_train_y[i][j] = 1
             else:
-                temp_train_y[j] = -1
-        for j in range(temp_test_y.shape[0]):
-            if temp_test_y[j] == i:
-                temp_test_y[j] = 1
+                temp_train_y[i][j] = -1
+        for j in range(temp_test_y[i].shape[0]):
+            if temp_test_y[i][j] == i:
+                temp_test_y[i][j] = 1
             else:
-                temp_test_y[j] = -1
-        # 开始训练
-        # print('开始训练')
-        thread = threading.Thread(target=sub_Perceptron_test, args=(model, accuracy, i, perceptron, train_x, temp_train_y, temp_test_y), name=str(i))
+                temp_test_y[i][j] = -1
+        thread = threading.Thread(target=sub_Perceptron_test, args=(accuracy, f1, i, perceptrons[i], train_x, temp_train_y[i], temp_test_y[i]), name=str(i))
         threads.append(thread)
     for t in threads:
         t.start()
-        print('Perceptron: 线程'+ t.name + '开始运行')
+        # print('Perceptron: 线程'+ t.name + '开始运行')
 
     # 所有线程完成后存储模型和准确率
     for t in threads:
         t.join()
-    pickle.dump(model, open('Perceptron\\models.pkl', 'wb'))
-    print(accuracy)
-    pickle.dump(accuracy, open('Perceptron\\accuracy.pkl', 'wb'))
+    # pickle.dump(model, open('Perceptron\\models.pkl', 'wb'))
+    accuracy = np.mean(accuracy)
+    f1 = np.mean(f1)
+    P_lr_dic.append([lr, accuracy, f1])
+    # pickle.dump(accuracy, open('Perceptron\\accuracy.pkl', 'wb'))
 
-def sub_Perceptron_test(model, accuracy, i, perceptron, x, temp_train_y, temp_test_y):
+def sub_Perceptron_test(accuracy, f1, i, perceptron, x, temp_train_y, temp_test_y):
     perceptron.train(x, temp_train_y)
     result = perceptron.predict(test_x)
-    correct = 0
-    for j, k in zip(result, temp_test_y):
-        correct += (j == k)
-    print(correct / len(result))
-    accuracy[i] = correct / len(result)
-    model[i] = perceptron
-    print('Perceptron: 线程' + str(i) + '运行结束!')
+    accuracy[i] = accuracy_score(temp_test_y, result)
+    f1[i] = f1_score(temp_test_y, result)
+    # print('Perceptron: 线程' + str(i) + '运行结束!')
 
 
 
@@ -85,7 +85,7 @@ def NB_test():
     # 训练模型
     nb.train(train_x, train_y)
     # 存储模型
-    pickle.dump(nb, open('Naive_Bayes\\model_multimodial.pkl', 'wb'))
+    # pickle.dump(nb, open('Naive_Bayes\\model_multimodial.pkl', 'wb'))
     # with open('Naive_Bayes\\model_Gaussian.pkl', 'rb') as f:
     #     nb = pickle.load(f)
     # 计算准确率
@@ -97,10 +97,21 @@ def NB_test():
 
 
 if __name__ == '__main__':
-    t1 = threading.Thread(target=Perceptron_test)
-    # t1.start()
-    t2 = threading.Thread(target=NB_test)
-    t2.start()
+    threads1 = []
+    # for epochs in range(1, 11):
+    for lr in np.arange(0.1, 1.6, 0.1):
+        epochs = 1
+        t1 = threading.Thread(target=Perceptron_test, args=(lr, epochs), name = str(epochs))
+        threads1.append(t1)
+    for t in threads1:
+        t.start()
+    for t in threads1:
+        t.join()
+        print('P:' + str(t.name) + 'finished')
+    print('P FINISHED')
+    print(P_lr_dic)
+    pickle.dump(P_lr_dic, open('P_lr_dic', 'wb'))
+
 
 
 

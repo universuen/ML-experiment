@@ -20,6 +20,7 @@ class NB:
         self.Py = np.zeros(n_class)  # 存储P(Y)
         self.Pxy = np.zeros((n_class, n_attribute))  # 存储后验概率P(X|Y)
 
+
     def train(self, x, y):
         data = x.data
         indptr = x.indptr
@@ -36,16 +37,16 @@ class NB:
         threads = []
         # 然后计算在每一个类别Y下每一个属性X的后验概率
         for i in range(self.Py.shape[0]):
-            t = threading.Thread(target=self.sub_train, args=(y, i, x, indptr, indices, data), name=str(i))
+            t = threading.Thread(target=self._train, args=(y, i, x, indptr, indices, data), name=str(i))
             threads.append(t)
         for t in threads:
             t.start()
-            print('NB train: 线程'+ t.name + '开始运行')
+            # print('NB train: 线程'+ t.name + '开始运行')
         for t in threads:
             t.join()
 
 
-    def sub_train(self, y, i, x, indptr, indices, data):
+    def _train(self, y, i, x, indptr, indices, data):
         container = []  # 暂时存放属于当前类别Y的所有样本
         sum_container = 0.
         for j in range(y.shape[0]):
@@ -65,10 +66,7 @@ class NB:
             # 拉普拉斯平滑后的条件概率,为防止下溢将结果扩大1e5倍
             self.Pxy[i][j] = (sum + 1) / (sum_container + x.shape[1])*(1e5)
             # print(self.Pxy[i][j])
-        print('NB train: 线程' + str(i) + '运行结束')
-
-
-
+        # print('NB train: 线程' + str(i) + '运行结束')
 
 
     def predict(self, x):
@@ -78,16 +76,17 @@ class NB:
         indices = x.indices
         threads = []
         for i in range(x.shape[0]):
-            t = threading.Thread(target=self.sub_predict, args=(x, i, result, data, indptr, indices), name=str(i))
+            t = threading.Thread(target=self._predict, args=(x, i, result, data, indptr, indices), name=str(i))
             threads.append(t)
         for t in threads:
             t.start()
-            print('NB predict: 线程'+ t.name + '开始运行')
+            # print('NB predict: 线程'+ t.name + '开始运行')
         for t in threads:
             t.join()
         return result
 
-    def sub_predict(self, x, i, result, data, indptr, indices):
+
+    def _predict(self, x, i, result, data, indptr, indices):
         # 从稀疏矩阵中提取一个行向量
         temp = np.zeros(x.shape[1])
         for j in range(indptr[i], indptr[i + 1]):
@@ -97,10 +96,10 @@ class NB:
             Pyx[j] = np.log(self.Py[j])
             # 使用多项式概率分布
             for k in range(self.Pxy.shape[1]):
-                if self.Pxy[j][k] == 0:
-                    continue
                 Pyx[j] += np.log(self.Pxy[j][k] * temp[k] + 1)
         # 取概率最大的类
         # print(np.argsort(Pyx))
         result[i] = np.argmax(Pyx)
-        print('NB predict: 线程' + str(i) + '运行结束', result[i])
+        # print('NB predict: 线程' + str(i) + '运行结束', result[i])
+
+
