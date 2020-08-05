@@ -7,6 +7,7 @@ import pickle
 import threading
 from sklearn.metrics import f1_score, accuracy_score
 
+# This is a test line.
 
 # 数据获取
 train_set = fetch_20newsgroups(subset='train')
